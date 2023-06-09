@@ -21,6 +21,8 @@ import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.dart.DartExecutor;
 import io.flutter.embedding.engine.loader.FlutterLoader;
 import io.flutter.view.FlutterCallbackInformation;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -49,6 +51,7 @@ public class UploadWorker extends ListenableWorker implements CountProgressListe
   public static final String ARG_METHOD = "method";
   public static final String ARG_HEADERS = "headers";
   public static final String ARG_FILES_PATH = "filesPath";
+  public static final String ARG_DATA_PATH = "dataPath";
   public static final String ARG_DATA = "data";
   public static final String ARG_FILES = "files";
   public static final String ARG_REQUEST_TIMEOUT = "requestTimeout";
@@ -67,9 +70,6 @@ public class UploadWorker extends ListenableWorker implements CountProgressListe
   private static final String TAG = UploadWorker.class.getSimpleName();
   private static final int UPDATE_STEP = 0;
   private static final int DEFAULT_ERROR_STATUS_CODE = 500;
-
-  private static final Type FILES_TYPE = new TypeToken<List<FileItem>>() {
-  }.getType();
 
   private String tag;
   private Call call;
@@ -120,6 +120,7 @@ public class UploadWorker extends ListenableWorker implements CountProgressListe
     boolean isBinaryUpload = getInputData().getBoolean(ARG_BINARY_UPLOAD, false);
     String headersJson = getInputData().getString(ARG_HEADERS);
     String parametersJson = getInputData().getString(ARG_DATA);
+    String parametersJsonPath = getInputData().getString(ARG_DATA_PATH);
     String filesJson = getInputData().getString(ARG_FILES);
     String filesJsonPath = getInputData().getString(ARG_FILES_PATH);
     tag = getInputData().getString(ARG_UPLOAD_REQUEST_TAG);
@@ -146,13 +147,18 @@ public class UploadWorker extends ListenableWorker implements CountProgressListe
         parameters = gson.fromJson(parametersJson, type);
       }
 
+      if(parametersJsonPath != null) {
+        BufferedReader dataReader = new BufferedReader(new FileReader(parametersJsonPath));
+        parameters = gson.fromJson(dataReader, type);
+      }
+
       if (filesJson != null) {
         files = gson.fromJson(filesJson, fileItemType);
       }
 
       if(filesJsonPath != null) {
         JsonReader filesReader = new JsonReader(new FileReader(filesJsonPath));
-        files = gson.fromJson(filesReader, FILES_TYPE);
+        files = gson.fromJson(filesReader, fileItemType);
       }
 
       final RequestBody innerRequestBody;

@@ -9,6 +9,7 @@ public class UploadTask {
   private String url;
   private String method;
   private String filesJsonPath;
+  private String dataJsonPath;
   private Map<String, String> headers;
   private Map<String, String> data;
   private List<FileItem> files;
@@ -21,6 +22,7 @@ public class UploadTask {
       String url,
       String method,
       String filesJsonPath,
+      String dataJsonPath,
       List<FileItem> files,
       Map<String, String> headers,
       Map<String, String> data,
@@ -31,6 +33,7 @@ public class UploadTask {
     this.url = url;
     this.method = method;
     this.filesJsonPath = filesJsonPath;
+    this.dataJsonPath = dataJsonPath;
     this.files = files;
     this.headers = headers;
     this.data = data;
@@ -53,6 +56,10 @@ public class UploadTask {
   }
   public String getFilesJsonPath() {
     return filesJsonPath;
+  }
+
+  public String getDataJsonPath() {
+    return dataJsonPath;
   }
 
   public List<FileItem> getFiles() {

@@ -103,6 +103,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
      String url = call.argument("url");
      String method = call.argument("method");
      String filesJsonPath = call.argument("filesJsonPath");
+     String dataJsonPath = call.argument("dataJsonPath");
      Map<String, String> parameters = call.argument("data");
      Map<String, String> headers = call.argument("headers");
      String tag = call.argument("tag");
@@ -132,9 +133,10 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
                  url,
                  method,
                  filesJsonPath,
+                     dataJsonPath,
                  null,
                  headers,
-                     parameters,
+                     null,
                  connectionTimeout,
                  false,
                  tag,
@@ -194,6 +196,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
                 url,
                 method,
                 null,
+                null,
                 items,
                 headers,
                 parameters,
@@ -249,6 +252,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
             new UploadTask(
                 url,
                 method,
+                null,
                 null,
                 Collections.singletonList(new FileItem(path)),
                 headers,
@@ -321,6 +325,10 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
     if (task.getFilesJsonPath() != null) {
         dataBuilder.putString(UploadWorker.ARG_FILES_PATH, task.getFilesJsonPath());
     }
+
+      if (task.getDataJsonPath() != null) {
+          dataBuilder.putString(UploadWorker.ARG_DATA_PATH, task.getDataJsonPath());
+      }
 
     if (task.getHeaders() != null) {
       String headersJson = gson.toJson(task.getHeaders());

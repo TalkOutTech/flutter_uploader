@@ -115,8 +115,8 @@ class FlutterUploader {
         'url': upload.url,
         'method': describeEnum(upload.method),
         'filesJsonPath': upload.filesJsonFilePath,
+        'dataJsonPath': upload.dataJsonFilePath,
         'headers': upload.headers,
-        'data': upload.data,
         'tag': upload.tag,
         'allowCellular': upload.allowCellular,
       }))!;

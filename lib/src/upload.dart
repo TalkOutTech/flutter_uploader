@@ -72,7 +72,7 @@ class LargeMultipartFormDataUpload extends Upload {
     Map<String, String>? headers,
     String? tag,
     this.filesJsonFilePath,
-    this.data,
+    this.dataJsonFilePath,
     bool allowCellular = true,
   })  : assert(filesJsonFilePath != null),
         super(
@@ -87,7 +87,7 @@ class LargeMultipartFormDataUpload extends Upload {
   final String? filesJsonFilePath;
 
   /// json file with serialized data to be uploaded
-  final Map<String, String>? data;
+  final String? dataJsonFilePath;
 }
 
 /// Also called a binary upload, this represents a upload without any form-encoding applies.
