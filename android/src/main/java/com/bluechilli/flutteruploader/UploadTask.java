@@ -8,6 +8,7 @@ public class UploadTask {
 
   private String url;
   private String method;
+  private String filesJsonPath;
   private Map<String, String> headers;
   private Map<String, String> data;
   private List<FileItem> files;
@@ -19,6 +20,7 @@ public class UploadTask {
   public UploadTask(
       String url,
       String method,
+      String filesJsonPath,
       List<FileItem> files,
       Map<String, String> headers,
       Map<String, String> data,
@@ -28,6 +30,7 @@ public class UploadTask {
       boolean allowCellular) {
     this.url = url;
     this.method = method;
+    this.filesJsonPath = filesJsonPath;
     this.files = files;
     this.headers = headers;
     this.data = data;
@@ -47,6 +50,9 @@ public class UploadTask {
 
   public String getMethod() {
     return method;
+  }
+  public String getFilesJsonPath() {
+    return filesJsonPath;
   }
 
   public List<FileItem> getFiles() {

@@ -12,10 +12,17 @@ import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 import com.bluechilli.flutteruploader.plugin.StatusListener;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,6 +65,13 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
       case "enqueue":
         enqueue(call, result);
         break;
+     case "enqueueLarge":
+       try {
+         enqueueLarge(call, result);
+       } catch (FileNotFoundException e) {
+         throw new RuntimeException(e);
+       }
+       break;
       case "enqueueBinary":
         enqueueBinary(call, result);
         break;
@@ -84,6 +98,62 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
 
     result.success(null);
   }
+
+ private void enqueueLarge(MethodCall call, MethodChannel.Result result) throws FileNotFoundException {
+     String url = call.argument("url");
+     String method = call.argument("method");
+     String filesJsonPath = call.argument("filesJsonPath");
+     Map<String, String> parameters = call.argument("data");
+     Map<String, String> headers = call.argument("headers");
+     String tag = call.argument("tag");
+     Boolean allowCellular = call.argument("allowCellular");
+     if (allowCellular == null) {
+       result.error("invalid_flag", "allowCellular must be set", null);
+       return;
+     }
+
+     if (method == null) {
+       method = "POST";
+     }
+
+     if (filesJsonPath == null || filesJsonPath.isEmpty()) {
+       result.error("invalid_call", "Invalid call parameters passed", null);
+       return;
+     }
+
+     if (!VALID_HTTP_METHODS.contains(method.toUpperCase())) {
+       result.error("invalid_method", "Method must be either POST | PUT | PATCH", null);
+       return;
+     }
+
+     WorkRequest request =
+         buildRequest(
+             new UploadTask(
+                 url,
+                 method,
+                 filesJsonPath,
+                 null,
+                 headers,
+                     parameters,
+                 connectionTimeout,
+                 false,
+                 tag,
+                 allowCellular));
+
+     WorkManager.getInstance(context)
+         .enqueue(request)
+         .getResult()
+         .addListener(
+             () -> {
+               String taskId = request.getId().toString();
+               mainExecutor.execute(
+                   () -> {
+                     result.success(taskId);
+                     statusListener.onUpdateProgress(taskId, UploadStatus.ENQUEUED, 0);
+                   });
+             },
+             workManagerExecutor);
+   }
 
   private void enqueue(MethodCall call, MethodChannel.Result result) {
     String url = call.argument("url");
@@ -123,6 +193,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
             new UploadTask(
                 url,
                 method,
+                null,
                 items,
                 headers,
                 parameters,
@@ -178,6 +249,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
             new UploadTask(
                 url,
                 method,
+                null,
                 Collections.singletonList(new FileItem(path)),
                 headers,
                 Collections.emptyMap(),
@@ -241,8 +313,14 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
 
     List<FileItem> files = task.getFiles();
 
-    String fileItemsJson = gson.toJson(files);
-    dataBuilder.putString(UploadWorker.ARG_FILES, fileItemsJson);
+    if (files != null && !files.isEmpty()) {
+        String fileItemsJson = gson.toJson(files);
+        dataBuilder.putString(UploadWorker.ARG_FILES, fileItemsJson);
+    }
+
+    if (task.getFilesJsonPath() != null) {
+        dataBuilder.putString(UploadWorker.ARG_FILES_PATH, task.getFilesJsonPath());
+    }
 
     if (task.getHeaders() != null) {
       String headersJson = gson.toJson(task.getHeaders());

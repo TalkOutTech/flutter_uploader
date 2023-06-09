@@ -61,6 +61,35 @@ class MultipartFormDataUpload extends Upload {
   final Map<String, String>? data;
 }
 
+/// Standard RFC 2388 multipart/form-data upload.
+///
+/// The platform will generate the boundaries and accompanying information.
+class LargeMultipartFormDataUpload extends Upload {
+  /// Default constructor which requires either files or data to be set.
+  LargeMultipartFormDataUpload({
+    required String url,
+    UploadMethod method = UploadMethod.POST,
+    Map<String, String>? headers,
+    String? tag,
+    this.filesJsonFilePath,
+    this.data,
+    bool allowCellular = true,
+  })  : assert(filesJsonFilePath != null),
+        super(
+          url: url,
+          method: method,
+          headers: headers,
+          tag: tag,
+          allowCellular: allowCellular,
+        );
+
+  /// json file with serialized FileItems to be uploaded
+  final String? filesJsonFilePath;
+
+  /// json file with serialized data to be uploaded
+  final Map<String, String>? data;
+}
+
 /// Also called a binary upload, this represents a upload without any form-encoding applies.
 class RawUpload extends Upload {
   /// Default constructor.

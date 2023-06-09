@@ -110,6 +110,17 @@ class FlutterUploader {
         'allowCellular': upload.allowCellular,
       }))!;
     }
+    if (upload is LargeMultipartFormDataUpload) {
+      return (await _platform.invokeMethod<String>('enqueueLarge', {
+        'url': upload.url,
+        'method': describeEnum(upload.method),
+        'filesJsonPath': upload.filesJsonFilePath,
+        'headers': upload.headers,
+        'data': upload.data,
+        'tag': upload.tag,
+        'allowCellular': upload.allowCellular,
+      }))!;
+    }
     if (upload is RawUpload) {
       return (await _platform.invokeMethod<String>('enqueueBinary', {
         'url': upload.url,
