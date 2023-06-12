@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import okhttp3.Call;
 import okhttp3.Headers;
 import okhttp3.MediaType;
@@ -157,8 +159,15 @@ public class UploadWorker extends ListenableWorker implements CountProgressListe
       }
 
       if(filesJsonPath != null) {
-        JsonReader filesReader = new JsonReader(new FileReader(filesJsonPath));
-        files = gson.fromJson(filesReader, fileItemType);
+        BufferedReader filesReader = new BufferedReader(new FileReader(filesJsonPath));
+
+        Type listType = new TypeToken<List<Map<String, String>>>(){}.getType();
+        List<HashMap<String, String>> listMap =
+                gson.fromJson(filesReader, listType);
+
+        for (Map<String, String> file : listMap) {
+          files.add(FileItem.fromJson(file));
+        }
       }
 
       final RequestBody innerRequestBody;
@@ -183,6 +192,7 @@ public class UploadWorker extends ListenableWorker implements CountProgressListe
       } else {
         MultipartBody.Builder formRequestBuilder = prepareRequest(parameters, null);
         int fileExistsCount = 0;
+
         for (FileItem item : files) {
           File file = new File(item.getPath());
           Log.d(TAG, "attaching file: " + item.getPath());
