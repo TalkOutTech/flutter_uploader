@@ -201,6 +201,7 @@ public class UploadWorker extends ListenableWorker implements CountProgressListe
             fileExistsCount++;
             String mimeType = GetMimeType(item.getPath());
             MediaType contentType = MediaType.parse(mimeType);
+            Log.d(TAG, "file exists -> file:" + item.getPath() + ", mimeType:" + mimeType);
             RequestBody fileBody = RequestBody.create(file, contentType);
             formRequestBuilder.addFormDataPart(item.getFieldname(), file.getName(), fileBody);
           } else {
@@ -428,7 +429,13 @@ public class UploadWorker extends ListenableWorker implements CountProgressListe
 
   private String GetMimeType(String url) {
     String type = "application/octet-stream";
-    String extension = MimeTypeMap.getFileExtensionFromUrl(url);
+    String extension = "";
+
+    int i = url.lastIndexOf('.');
+    if (i > 0) {
+      extension = url.substring(i+1);
+    }
+
     try {
       if (extension != null && !extension.isEmpty()) {
         String mimeType =
